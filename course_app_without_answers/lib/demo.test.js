@@ -54,6 +54,15 @@ describe('demo', () => {
       demo.foo();
       expect(spy.calledOnce).to.be.true;
       expect(spy).to.have.been.calledOnce;
+      spy.restore();
     });
+    it("should stub console warn",()=>{
+      let stub = sinon.stub(console,'warn').callsFake(()=>{
+        console.log("message from the stub");
+      });
+      demo.foo()
+      expect(stub).to.have.been.calledOnce;
+      expect(stub).to.have.calledWith('console.warn was called')
+    })
   });
 });
