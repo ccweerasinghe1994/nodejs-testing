@@ -2,11 +2,12 @@ const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 const sinonChai = require('sinon-chai');
 const sinon = require('sinon');
+const rewire = require('rewire');
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
-let demo = require('./demo');
+let demo = rewire('./demo');
 
 describe('demo', () => {
   context('add', () => {
@@ -53,6 +54,7 @@ describe('demo', () => {
       await expect(demo.addPromise(2, 2)).to.eventually.equal(4);
     });
   });
+
   context('test doubles', () => {
     it('should spy on log', () => {
       let spy = sinon.spy(console, 'log');
@@ -69,6 +71,21 @@ describe('demo', () => {
       demo.foo();
       expect(stub).to.have.been.calledOnce;
       expect(stub).to.have.calledWith('console.warn was called');
+      stub.restore();
     });
   });
+
+  context("stub private functions",()=>{
+    it("should stub create file",async ()=>{
+      let createStub = sinon.stub(demo,'createFile').resolves('create_stub');
+      let callStub = sinon.stub().resolves('calldb_stub');
+      demo.__set__('callDB',callStub);
+
+      let result = await demo.bar('test.txt');
+      expect(result).to.equal('calldb_stub');
+      expect(createStub).to.have.been.calledOnce;
+      expect(createStub).to.have.been.calledWith('test.txt');
+      expect(callStub).to.have.been.calledOnce;
+    })
+  })
 });
